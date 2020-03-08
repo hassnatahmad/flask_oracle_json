@@ -84,10 +84,13 @@ CREATE TABLE C_LOADING_CONDITIONS
 "Gross area (mm2)" VARCHAR(255),
 "FSF" VARCHAR(255),
 "DOF" VARCHAR(255),
-"Vertical spring rate tangent (N/mm)" VARCHAR(255),
-"Vertical spring rate secant (N/mm)" VARCHAR(255),
+/*"Vertical spring rate tangent (N/mm)" VARCHAR(255),*/
+"Vertical spring rate tangent (" VARCHAR(255),
+/*"Vertical spring rate secant (N/mm)" VARCHAR(255),*/
+"Vertical spring rate secant (N" VARCHAR(255),
 "Lateral spring rate (N/mm)" VARCHAR(255),
-"Longitudinal spring rate (N/mm)" VARCHAR(255),
+/*"Longitudinal spring rate (N/mm)" VARCHAR(255),*/
+"Longitudinal spring rate (N/mm" VARCHAR(255),
 "Torsional spring rate (N/mm)" VARCHAR(255),
 "RRc" VARCHAR(255),
 "RR (kg)" VARCHAR(255),
@@ -130,7 +133,7 @@ CREATE TABLE C_LOADING_CONDITIONS_EXTRA
 PRIMARY KEY ("ID")
 );
 
-CREATE TABLE C_LOADING_CONDITIONS_TEST_SUBTYPES
+CREATE TABLE C_LOADING_CONDITIONS_SUBTYPES
 (
 "ID" NUMBER GENERATED ALWAYS AS IDENTITY,
 "Test-load-pressure ID" VARCHAR(255),
@@ -138,6 +141,6 @@ CREATE TABLE C_LOADING_CONDITIONS_TEST_SUBTYPES
 "Test Subtype" VARCHAR(255),
 "Key value" VARCHAR(255),
 PRIMARY KEY ("ID"),
-CONSTRAINT FK_TEST_LOAD_PRESSURE_ID_SUBTYPES FOREIGN KEY ("Test-load-pressure ID")
+CONSTRAINT FK_LOAD_PRESSURE_ID_SUBTYPES FOREIGN KEY ("Test-load-pressure ID")
 REFERENCES C_LOADING_CONDITIONS("Test-load-pressure ID")
 );
