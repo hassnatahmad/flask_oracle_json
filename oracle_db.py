@@ -32,11 +32,11 @@ def get_all_rows(table_name):
 
 def get_cols(cols, allowed_col_length):
     col_length = len(cols)
-    col_string = '(' + put_double_quote_if_space_between_col_name(str(cols[0]))
+    col_string = '(' + put_double_quote_if_space_between_col_name_and_length_30(str(cols[0]))
     for i in range(1, col_length):
         if i >= allowed_col_length:
             continue
-        col_string += ',' + put_double_quote_if_space_between_col_name(str(cols[i]))
+        col_string += ',' + put_double_quote_if_space_between_col_name_and_length_30(str(cols[i]))
     return col_string + ')'
 
 
@@ -149,5 +149,8 @@ def delete_all_tables_data():
     delete_all_rows('A_GEOMETRIES')
 
 
-def put_double_quote_if_space_between_col_name(col_name):
+def put_double_quote_if_space_between_col_name_and_length_30(col_name):
+    str = col_name
+    if len(col_name) > 30:
+        return '"' + str[:30] + '"'
     return '"' + col_name + '"'
