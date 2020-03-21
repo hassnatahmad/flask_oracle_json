@@ -28,8 +28,8 @@ class UploadResource(Resource):
         if file and self.is_file_allowed(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            json_parser.save_all_json(filename)
-            resp = jsonify({'message': 'File successfully uploaded'})
+            response_message = json_parser.save_all_json(filename)
+            resp = jsonify({'message': response_message})
             resp.status_code = 201
             return resp
         else:

@@ -47,10 +47,14 @@ def save_all_json(json_file_name):
         b_dict, b_link_back_dict = oracle_db.read_all_rows_and_save('B_TESTS', B_Tests_cols, B_Tests_rows)
         c_dict, c_link_back_dict = oracle_db.read_all_rows_and_save('C_LOADING_CONDITIONS', C_Loading_conditions_cols,
                                                                     C_Loading_conditions_rows)
+        #d_dict, d_link_back_dict= oracle_db.read_all_rows_and_save('D_COMPONENTS', D_Components_cols, D_Components_rows)
+        #e_dict, e_link_back_dict=oracle_db.read_all_rows_and_save('E_COMPONENTS_RESULTS', E_Components_results_cols, E_Components_results_rows)
+
         oracle_db.save_a_b_table('A_B', a_dict, b_dict, b_link_back_dict)
         oracle_db.save_b_c_table('B_C', b_dict, c_dict, c_link_back_dict)
-        # oracle_db.read_all_rows_and_save('D_COMPONENTS', D_Components_cols, D_Components_rows)
-        # oracle_db.read_all_rows_and_save('E_COMPONENTS_RESULTS', E_Components_results_cols, E_Components_results_rows)
+
+        #oracle_db.save_a_b_table('B_D', a_dict, b_dict, b_link_back_dict)
+        #oracle_db.save_b_c_table('E_C', b_dict, c_dict, c_link_back_dict)
 
         # start logging data from sql
 

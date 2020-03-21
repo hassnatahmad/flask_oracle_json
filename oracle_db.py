@@ -55,7 +55,7 @@ def read_all_rows_and_save_extra(table_name, cols, rows, allowed_col_length):
     link_key = ''
     if table_name == 'A_GEOMETRIES' or table_name == 'B_TESTS':
         link_key += config.get_table_link_back_key('A_GEOMETRIES')
-    else:
+    elif table_name == 'C_LOADING_CONDITIONS':
         link_key += config.get_table_link_back_key('B_TESTS')
     link_back_key_index = cols.index(link_key)
     row_string = ''
