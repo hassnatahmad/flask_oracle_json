@@ -19,6 +19,7 @@ $(document).ready(function (e) {
         }
 
         form_data.append("file", document.getElementById('jsonFile').files[0]);
+        $('#msg').html('<span style="color:#68ff34">Please wait.... Data is processing!</span>');
 
         $.ajax({
             url: '/api/upload', // point to server-side URL

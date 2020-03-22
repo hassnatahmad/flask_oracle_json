@@ -16,6 +16,8 @@ encoding = 'UTF-8'
 a_geometries_column = 46
 b_tests_column = 10
 c_loading_conditions_column = 30
+d_components = 5
+e_components_results = 5
 connection_string = 'oracle://{user}:{password}@{sid}'.format(
     user=username,
     password=password,
@@ -34,6 +36,10 @@ def get_table_total_cols(table_name):
         return b_tests_column
     elif table_name == 'C_LOADING_CONDITIONS':
         return c_loading_conditions_column
+    elif table_name == 'D_COMPONENTS':
+        return d_components
+    elif table_name == 'E_COMPONENTS':
+        return e_components_results
 
 
 def get_table_primary_key(table_name):
@@ -55,6 +61,18 @@ def get_table_primary_key(table_name):
         return 'B_C_ID'
     elif table_name == 'C_LOADING_SUBTYPES':
         return 'C_LOADING_SUBTYPES_ID'
+    elif table_name == 'D_COMPONENTS':
+        return 'D_COMPONENTS_ID'
+    elif table_name == 'E_COMPONENTS':
+        return 'E_COMPONENTS_ID'
+    elif table_name == 'D_COMPONENTS_EXTRA':
+        return 'D_COMPONENTS_EXTRA_ID'
+    elif table_name == 'E_COMPONENTS_EXTRA':
+        return 'E_COMPONENTS_EXTRA_ID'
+    elif table_name == 'B_D':
+        return 'B_D_ID'
+    elif table_name == 'C_E':
+        return 'C_E_ID'
 
 
 def get_table_link_back_key(table_name):
@@ -64,6 +82,10 @@ def get_table_link_back_key(table_name):
         return 'Test ID'
     elif table_name == 'C_LOADING_CONDITIONS':
         return 'Test-load-pressure ID'
+    elif table_name == 'D_COMPONENTS':
+        return 'Test-component ID'
+    elif table_name == 'E_COMPONENTS':
+        return 'Test-load-pressure-component I'
 
 
 def get_key_by_value(dictOfElements, valueToFind):

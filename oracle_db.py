@@ -57,6 +57,10 @@ def read_all_rows_and_save_extra(table_name, cols, rows, allowed_col_length):
         link_key += config.get_table_link_back_key('A_GEOMETRIES')
     elif table_name == 'C_LOADING_CONDITIONS':
         link_key += config.get_table_link_back_key('B_TESTS')
+    elif table_name == 'D_COMPONENTS':
+        link_key += config.get_table_link_back_key('B_TESTS')
+    elif table_name == 'E_COMPONENTS':
+        link_key += config.get_table_link_back_key('C_LOADING_ID')
     link_back_key_index = cols.index(link_key)
     row_string = ''
     extra_row_string = []
@@ -98,8 +102,12 @@ def read_all_rows_and_save(table_name, cols, rows):
         link_key = ''
         if table_name == 'A_GEOMETRIES' or table_name == 'B_TESTS':
             link_key += config.get_table_link_back_key('A_GEOMETRIES')
-        else:
+        elif table_name == 'C_LOADING_CONDITIONS':
             link_key += config.get_table_link_back_key('B_TESTS')
+        elif table_name == 'D_COMPONENTS':
+            link_key += config.get_table_link_back_key('B_TESTS')
+        elif table_name == 'E_COMPONENTS':
+            link_key += config.get_table_link_back_key('C_LOADING_CONDITIONS')
         link_back_key_index = cols.index(link_key)
         row_string = ''
         for i in range(0, len(rows)):
@@ -163,9 +171,39 @@ def save_b_c_table(table_name, b_dict, c_dict, c_link_dict):
             print('seems no values', TypeError)
 
 
+def save_c_e_table(table_name, b_dict, c_dict, c_link_dict):
+    primary_key = config.get_table_primary_key(table_name)
+
+    for key, value in c_link_dict.items():
+        primary_key_value = config.generate_uuid()
+        try:
+            link_key, b_crd = config.get_key_by_value(b_dict, value)
+            sql_string = 'insert into ' + table_name + ' ("{0}","C_LOADING_ID","E_COMPONENTS_ID") values ('.format(
+                primary_key)
+            sql_string += "'{0}','{1}','{2}')".format(primary_key_value, link_key, key)
+            save_each_row(sql_string, table_name)
+        except TypeError:
+            print('seems no values', TypeError)
+
+
+def save_b_d_table(table_name, b_dict, c_dict, c_link_dict):
+    primary_key = config.get_table_primary_key(table_name)
+
+    for key, value in c_link_dict.items():
+        primary_key_value = config.generate_uuid()
+        try:
+            link_key, b_crd = config.get_key_by_value(b_dict, value)
+            sql_string = 'insert into ' + table_name + ' ("{0}","B_TESTS_ID","D_COMPONENTS_ID") values ('.format(
+                primary_key)
+            sql_string += "'{0}','{1}','{2}')".format(primary_key_value, link_key, key)
+            save_each_row(sql_string, table_name)
+        except TypeError:
+            print('seems no values', TypeError)
+
+
 def save_each_row(sql_statement, table_name):
     # print('done writing {0} to table'.format(table_name))
-    print('executing: ', sql_statement)
+    #print('executing: ', sql_statement)
     try:
         # establish a new connection
         with cx_Oracle.connect(config.username,
@@ -179,9 +217,9 @@ def save_each_row(sql_statement, table_name):
 
                 # commit work
                 connection.commit()
-                print('done writing {0} to table'.format(table_name))
+                #print('done writing {0} to table'.format(table_name))
     except cx_Oracle.Error as error:
-        print('{0} Error occurred: {1}'.format(table_name, error))
+        print('{0} Error occurred: {1}'.format(sql_statement, error))
     finally:
         if not connection.close:
             cursor.close()
