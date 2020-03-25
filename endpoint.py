@@ -28,9 +28,9 @@ class UploadResource(Resource):
         if file and self.is_file_allowed(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            response_message = json_parser.save_all_json(filename)
+            response_message,error_code = json_parser.save_all_json(filename)
             resp = jsonify({'message': response_message})
-            resp.status_code = 201
+            resp.status_code = error_code
             return resp
         else:
             resp = jsonify({'message': 'Allowed file type is .json and maximum size should be less then 10mb'})

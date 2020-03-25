@@ -30,34 +30,51 @@ def save_all_json(json_file_name):
         E_Components_results_cols = json_data["E_Components_results"]["columns"]
         E_Components_results_rows = json_data["E_Components_results"]["data"]
         # We check here that does json contains valid number of column
-        if not col_length_validation('A_GEOMETRIES', A_Geometries_cols) or not col_length_validation('B_TESTS',B_Tests_cols) or not col_length_validation('C_LOADING_CONDITIONS', C_Loading_conditions_cols) or not col_length_validation('D_COMPONENTS', D_Components_cols) or not col_length_validation('E_COMPONENTS', E_Components_results_cols):
+        if not col_length_validation('A_GEOMETRIES', A_Geometries_cols) or not col_length_validation('B_TESTS',
+                                                                                                     B_Tests_cols) or not col_length_validation(
+            'C_LOADING_CONDITIONS', C_Loading_conditions_cols) or not col_length_validation('D_COMPONENTS',
+                                                                                            D_Components_cols) or not col_length_validation(
+            'E_COMPONENTS', E_Components_results_cols):
             # If file exists, delete it because it is invalid
             if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name)):
                 os.remove(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name))
             error_code = 400
-            return 'JSON File is corrupted. File has been deleted from server',error_code
+            return 'JSON File is corrupted. File has been deleted from server', error_code
 
         # delete all rows only for testing purpose, dont do it on live system , order matters
         # oracle_db.delete_all_tables() #delets whole table
         # oracle_db.delete_all_tables_data() #deletes all rows from all tables
 
         # start saving json
-        print('Please wait database is being saved')
-        a_dict, a_link_back_dict = oracle_db.read_all_rows_and_save('A_GEOMETRIES', A_Geometries_cols,
-                                                                    A_Geometries_rows)
-        b_dict, b_link_back_dict = oracle_db.read_all_rows_and_save('B_TESTS', B_Tests_cols, B_Tests_rows)
-        c_dict, c_link_back_dict = oracle_db.read_all_rows_and_save('C_LOADING_CONDITIONS', C_Loading_conditions_cols,
-                                                                    C_Loading_conditions_rows)
-        d_dict, d_link_back_dict = oracle_db.read_all_rows_and_save('D_COMPONENTS', D_Components_cols,
-                                                                    D_Components_rows)
-        e_dict, e_link_back_dict = oracle_db.read_all_rows_and_save('E_COMPONENTS', E_Components_results_cols,
-                                                                    E_Components_results_rows)
+        print('Please wait JSON is being parsed')
+        # Here we prepare one big sql insert all stament ref: https://www.techonthenet.com/oracle/questions/insert_rows.php
+        sql_list = ['INSERT ALL ']
+        a_dict, a_link_back_dict, a_list = oracle_db.read_all_rows_and_save('A_GEOMETRIES', A_Geometries_cols,
+                                                                            A_Geometries_rows)
+        b_dict, b_link_back_dict, b_list = oracle_db.read_all_rows_and_save('B_TESTS', B_Tests_cols, B_Tests_rows)
+        c_dict, c_link_back_dict, c_list = oracle_db.read_all_rows_and_save('C_LOADING_CONDITIONS',
+                                                                            C_Loading_conditions_cols,
+                                                                            C_Loading_conditions_rows)
+        d_dict, d_link_back_dict, d_list = oracle_db.read_all_rows_and_save('D_COMPONENTS', D_Components_cols,
+                                                                            D_Components_rows)
+        e_dict, e_link_back_dict, e_list = oracle_db.read_all_rows_and_save('E_COMPONENTS', E_Components_results_cols,
+                                                                            E_Components_results_rows)
 
-        oracle_db.save_a_b_table('A_B', a_dict, b_dict, b_link_back_dict)
-        oracle_db.save_b_c_table('B_C', b_dict, c_dict, c_link_back_dict)
-        oracle_db.save_b_d_table('B_D', b_dict, d_dict, d_link_back_dict)
-        oracle_db.save_c_e_table('C_E', c_dict, e_dict, e_link_back_dict)
-        print('database is saved')
+        a_b_list = oracle_db.save_a_b_table('A_B', a_dict, b_dict, b_link_back_dict)
+        b_c_list = oracle_db.save_b_c_table('B_C', b_dict, c_dict, c_link_back_dict)
+        b_d_list = oracle_db.save_b_d_table('B_D', b_dict, d_dict, d_link_back_dict)
+        c_e_list = oracle_db.save_c_e_table('C_E', c_dict, e_dict, e_link_back_dict)
+        sql_list.extend(a_list)
+        sql_list.extend(b_list)
+        sql_list.extend(c_list)
+        sql_list.extend(d_list)
+        sql_list.extend(e_list)
+        sql_list.extend(a_b_list)
+        sql_list.extend(b_c_list)
+        sql_list.extend(b_d_list)
+        sql_list.extend(c_e_list)
+        sql_list.append('  SELECT * FROM dual')
+        sql_statement = ' '.join(sql_list)
 
         # start logging data from sql
 
@@ -66,9 +83,12 @@ def save_all_json(json_file_name):
         # oracle_db.get_all_rows('C_LOADING_CONDITIONS')
         # oracle_db.get_all_rows('D_COMPONENTS')
         # oracle_db.get_all_rows('E_COMPONENTS_RESULTS')
-        return 'JSON File is uploaded',error_code
+        print('Please wait database is being saved')
+        message,error_code = oracle_db.save_all_tables(sql_statement,json_file_name)
+        return message,error_code
     except KeyError:  # includes simplejson.decoder.JSONDecodeError
         # If file exists, delete it because it is invalid
         if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name)):
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name))
-        return 'Decoding JSON has failed. File has been deleted from server'
+        error_code = 400
+        return 'Decoding JSON has failed. File has been deleted from server', error_code

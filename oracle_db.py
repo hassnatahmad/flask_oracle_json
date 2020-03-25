@@ -1,3 +1,5 @@
+import os
+from app import app
 import db_config as config
 
 # config.set_oracle_instant_client_location()  # we set location of oracle instant client
@@ -48,6 +50,7 @@ def get_extra_cols(cols, allowed_col_length, table_name):
 
 
 def read_all_rows_and_save_extra(table_name, cols, rows, allowed_col_length):
+    sql_list = []
     col_string, col_list = get_extra_cols(cols, allowed_col_length, table_name)
     dict_data = dict()
     dict_data_link_back = dict()
@@ -72,7 +75,7 @@ def read_all_rows_and_save_extra(table_name, cols, rows, allowed_col_length):
         link_back_value = str(rows[i][link_back_key_index])
         dict_data.update({uid: first_value})
         dict_data_link_back.update({uid: link_back_value})
-        row_string += 'INSERT INTO ' + table_name + ' ' + col_string + ' VALUES('
+        row_string += 'INTO ' + table_name + ' ' + col_string + ' VALUES('
         row_string += "'" + uid + "'"
         row_string += ",'" + first_value + "'"
         for j in range(1, actual_row_cols):
@@ -82,16 +85,17 @@ def read_all_rows_and_save_extra(table_name, cols, rows, allowed_col_length):
                 continue
             row_string += ",'" + str(rows[i][j]) + "'"
         row_string += ')'
-        save_each_row(row_string, table_name)  # save normal columns
+        sql_list.append(row_string)  # save normal columns
         row_string = ''
         # iterate through al extra col
         for sql_stmnt in extra_row_string:
-            save_each_row(sql_stmnt, table_name + '_EXTRA')
+            sql_list.append(sql_stmnt)
 
-        return dict_data, dict_data_link_back
+        return dict_data, dict_data_link_back, sql_list
 
 
 def read_all_rows_and_save(table_name, cols, rows):
+    sql_list = []
     allowed_col_length = config.get_table_total_cols(table_name)
     dict_data = dict()
     dict_data_link_back = dict()
@@ -117,16 +121,16 @@ def read_all_rows_and_save(table_name, cols, rows):
             link_back_value = str(rows[i][link_back_key_index])
             dict_data.update({uid: first_value})
             dict_data_link_back.update({uid: link_back_value})
-            row_string += 'INSERT INTO ' + table_name + ' ' + col_string + ' VALUES('
+            row_string += 'INTO ' + table_name + ' ' + col_string + ' VALUES('
             row_string += "'" + uid + "'"
             row_string += ",'" + first_value + "'"
             for j in range(1, actual_row_cols):
                 row_string += ",'" + str(rows[i][j]) + "'"
             row_string += ')'
-            save_each_row(row_string, table_name)  # save normal columns
+            sql_list.append(row_string)  # save normal columns
             row_string = ''
 
-    return dict_data, dict_data_link_back
+    return dict_data, dict_data_link_back, sql_list
 
 
 def prepare_extra_column_sql(table_name, primary_key_value, col_name, col_value):
@@ -134,76 +138,82 @@ def prepare_extra_column_sql(table_name, primary_key_value, col_name, col_value)
     primary_key = config.get_table_primary_key(table_name)
     primary_key_extra = config.get_table_primary_key(table_name + '_EXTRA')
     sql_string = ''
-    sql_string += 'insert into ' + table_name + '_EXTRA '
+    sql_string += 'INTO ' + table_name + '_EXTRA '
     sql_string += '("{0}","{1}","Column name","Column value") '.format(primary_key_extra, primary_key)
-    sql_string += "values ('{0}','{1}','{2}','{3}')".format(primary_link_key_value, primary_key_value, col_name,
+    sql_string += "VALUES ('{0}','{1}','{2}','{3}')".format(primary_link_key_value, primary_key_value, col_name,
                                                             col_value)
     return sql_string
 
 
 def save_a_b_table(table_name, a_dict, b_dict, b_link_dict):
+    sql_list = []
     primary_key = config.get_table_primary_key(table_name)
 
     for key, value in b_link_dict.items():
         try:
             primary_key_value = config.generate_uuid()
             link_key, b_crd = config.get_key_by_value(a_dict, value)
-            sql_string = 'insert into ' + table_name + ' ("{0}","B_TESTS_ID","A_GEOMETRIES_ID") values ('.format(
+            sql_string = 'INTO ' + table_name + ' ("{0}","B_TESTS_ID","A_GEOMETRIES_ID") VALUES ('.format(
                 primary_key)
             sql_string += "'{0}','{1}','{2}')".format(primary_key_value, key, link_key)
-            save_each_row(sql_string, table_name)
+            sql_list.append(sql_string)
         except TypeError:
-            print('seems no values', TypeError)
+            print('seems no VALUES', TypeError)
+    return sql_list
 
 
 def save_b_c_table(table_name, b_dict, c_dict, c_link_dict):
+    sql_list = []
     primary_key = config.get_table_primary_key(table_name)
 
     for key, value in c_link_dict.items():
         primary_key_value = config.generate_uuid()
         try:
             link_key, b_crd = config.get_key_by_value(b_dict, value)
-            sql_string = 'insert into ' + table_name + ' ("{0}","B_TESTS_ID","C_LOADING_ID") values ('.format(
+            sql_string = 'INTO ' + table_name + ' ("{0}","B_TESTS_ID","C_LOADING_ID") VALUES ('.format(
                 primary_key)
             sql_string += "'{0}','{1}','{2}')".format(primary_key_value, link_key, key)
-            save_each_row(sql_string, table_name)
+            sql_list.append(sql_string)
         except TypeError:
-            print('seems no values', TypeError)
+            print('seems no VALUES', TypeError)
+    return sql_list
 
 
 def save_c_e_table(table_name, b_dict, c_dict, c_link_dict):
+    sql_list = []
     primary_key = config.get_table_primary_key(table_name)
 
     for key, value in c_link_dict.items():
         primary_key_value = config.generate_uuid()
         try:
             link_key, b_crd = config.get_key_by_value(b_dict, value)
-            sql_string = 'insert into ' + table_name + ' ("{0}","C_LOADING_ID","E_COMPONENTS_ID") values ('.format(
+            sql_string = 'INTO ' + table_name + ' ("{0}","C_LOADING_ID","E_COMPONENTS_ID") VALUES ('.format(
                 primary_key)
             sql_string += "'{0}','{1}','{2}')".format(primary_key_value, link_key, key)
-            save_each_row(sql_string, table_name)
+            sql_list.append(sql_string)
         except TypeError:
-            print('seems no values', TypeError)
+            print('seems no VALUES', TypeError)
+    return sql_list
 
 
 def save_b_d_table(table_name, b_dict, c_dict, c_link_dict):
+    sql_list = []
     primary_key = config.get_table_primary_key(table_name)
 
     for key, value in c_link_dict.items():
         primary_key_value = config.generate_uuid()
         try:
             link_key, b_crd = config.get_key_by_value(b_dict, value)
-            sql_string = 'insert into ' + table_name + ' ("{0}","B_TESTS_ID","D_COMPONENTS_ID") values ('.format(
+            sql_string = 'INTO ' + table_name + ' ("{0}","B_TESTS_ID","D_COMPONENTS_ID") VALUES ('.format(
                 primary_key)
             sql_string += "'{0}','{1}','{2}')".format(primary_key_value, link_key, key)
-            save_each_row(sql_string, table_name)
+            sql_list.append(sql_string)
         except TypeError:
-            print('seems no values', TypeError)
+            print('seems no VALUES', TypeError)
+    return sql_list
 
 
-def save_each_row(sql_statement, table_name):
-    # print('done writing {0} to table'.format(table_name))
-    #print('executing: ', sql_statement)
+def save_all_tables(sql_statement,json_file_name):
     try:
         # establish a new connection
         with cx_Oracle.connect(config.username,
@@ -217,14 +227,13 @@ def save_each_row(sql_statement, table_name):
 
                 # commit work
                 connection.commit()
-                #print('done writing {0} to table'.format(table_name))
+                print('database saved')
+                return 'Database Successfully saved',201
     except cx_Oracle.Error as error:
-        print('{0} Error occurred: {1}'.format(sql_statement, error))
-    finally:
-        if not connection.close:
-            cursor.close()
-            connection.close()
-            print("Oracle connection is closed")
+        print('Error occurred: {0}'.format(error))
+        if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name)):
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], json_file_name))
+        return 'File has been deleted from server. Reason: Database NOT SAVED. Error:{0}'.format(error), 201
 
 
 def delete_all_rows(table_name):
