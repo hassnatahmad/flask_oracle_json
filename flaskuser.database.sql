@@ -1,3 +1,45 @@
+drop table A_GEOMETRIES cascade constraints
+/
+
+drop table B_TESTS cascade constraints
+/
+
+drop table C_LOADING_CONDITIONS cascade constraints
+/
+
+drop table D_COMPONENTS cascade constraints
+/
+
+drop table E_COMPONENTS cascade constraints
+/
+
+drop table A_GEOMETRIES_EXTRA cascade constraints
+/
+
+drop table B_TESTS_EXTRA cascade constraints
+/
+
+drop table C_LOADING_EXTRA cascade constraints
+/
+
+drop table D_COMPONENTS_EXTRA cascade constraints
+/
+
+drop table E_COMPONENTS_EXTRA cascade constraints
+/
+
+drop table A_B cascade constraints
+/
+
+drop table B_C cascade constraints
+/
+
+drop table B_D cascade constraints
+/
+
+drop table C_E cascade constraints
+/
+
 CREATE TABLE A_GEOMETRIES
 (
     "A_GEOMETRIES_ID" VARCHAR(50) NOT NULL,
