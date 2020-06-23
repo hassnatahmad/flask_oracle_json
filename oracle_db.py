@@ -57,6 +57,21 @@ def get_unique_id(connection):
     except cx_Oracle.Error as e:
         raise UploadProcessException("Could not allocate sequence ID: {0}".format(e)) from e
 
+def get_crd_id(connection, crd):
+    """Getting unique primary id from SQL"""
+    sql_statement = 'select A_CCSD_ID from EM_REPO.A_CCSD where'
+    try:
+        # create a cursor
+        with connection.cursor() as cursor:
+            cursor.execute(sql_statement)
+            while True:
+                rows = cursor.fetchone()
+                if not rows:
+                    return 'NONE'
+                else:
+                    return str(rows[0])
+    except cx_Oracle.Error as e:
+        raise UploadProcessException("Could not allocate sequence ID: {0}".format(e)) from e
 
 def search_and_delete(connection, first_value):
     """Getting unique primary id from SQL"""
